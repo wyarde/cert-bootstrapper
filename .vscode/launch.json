@@ -1,0 +1,20 @@
+{
+  "configurations": [
+  {
+    "name": "Launch file",
+    "type": "go",
+    "request": "launch",
+    "mode": "debug",
+    "program": "${file}",
+    "args": ["${input:certFile}"],
+    "output": "${workspaceFolder}/bin/certificate-bootstrapper-debug"
+  }
+  ],
+  "inputs": [
+    {
+      "id": "certFile",
+      "type": "promptString",
+      "description": "Certificate to be bootstrapped"
+    }
+  ]
+}

@@ -15,8 +15,9 @@ jobs:
         run: make unit-test-coverage
       - name: Build Linux binary
         run: make PLATFORM=linux/amd64
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        if: github.ref == 'ref/head/master'
+      - name: Release Linux binary
+        uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ github.ref == 'refs/heads/master' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
@@ -26,8 +27,9 @@ jobs:
             certificate-bootstrapper        
       - name: Build MacOS binary
         run: make PLATFORM=darwin/amd64
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        if: github.ref == 'ref/head/master'
+      - name: Release MacOS binary
+        uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ github.ref == 'refs/heads/master' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
@@ -37,8 +39,9 @@ jobs:
             certificate-bootstrapper
       - name: Build Windows binary
         run: make PLATFORM=windows/amd64
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        if: github.ref == 'ref/head/master'
+      - name: Release Windows binary
+        uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ github.ref == 'refs/heads/master' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"

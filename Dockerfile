@@ -36,7 +36,6 @@ FROM scratch AS bin-unix
 COPY --from=build /out/certificate-bootstrapper /
 
 FROM bin-unix AS bin-linux
-FROM bin-unix AS bin-darwin
 
 FROM scratch AS bin-windows
 COPY --from=build /out/certificate-bootstrapper /certificate-bootstrapper.exe

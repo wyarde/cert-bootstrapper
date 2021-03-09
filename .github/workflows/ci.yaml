@@ -15,37 +15,15 @@ jobs:
         run: make unit-test-coverage
       - name: Build Linux binary
         run: make PLATFORM=linux/amd64
-      - name: Release Linux binary
-        uses: "marvinpinto/action-automatic-releases@latest"
-        if: ${{ github.ref == 'refs/heads/master' }}
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "linux_latest"
-          prerelease: true
-          title: "Development Build - Linux"
-          files: |
-            bin/certificate-bootstrapper        
-      - name: Build Mac binary
-        run: make PLATFORM=darwin/amd64
-      - name: Release Mac binary
-        uses: "marvinpinto/action-automatic-releases@latest"
-        if: ${{ github.ref == 'refs/heads/master' }}
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "mac_latest"
-          prerelease: true
-          title: "Development Build - Mac"
-          files: |
-            bin/certificate-bootstrapper
       - name: Build Windows binary
         run: make PLATFORM=windows/amd64
-      - name: Release Windows binary
+      - name: Release binaries
         uses: "marvinpinto/action-automatic-releases@latest"
         if: ${{ github.ref == 'refs/heads/master' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "windows_latest"
+          automatic_release_tag: "latest"
           prerelease: true
-          title: "Development Build - Windows"
+          title: "Development Build"
           files: |
-            bin/certificate-bootstrapper.exe
+            bin/*

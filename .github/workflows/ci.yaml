@@ -20,23 +20,23 @@ jobs:
         if: ${{ github.ref == 'refs/heads/master' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "linux_latest"
           prerelease: true
           title: "Development Build - Linux"
           files: |
-            certificate-bootstrapper        
-      - name: Build MacOS binary
+            bin/certificate-bootstrapper        
+      - name: Build Mac binary
         run: make PLATFORM=darwin/amd64
-      - name: Release MacOS binary
+      - name: Release Mac binary
         uses: "marvinpinto/action-automatic-releases@latest"
         if: ${{ github.ref == 'refs/heads/master' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "mac_latest"
           prerelease: true
-          title: "Development Build - MacOS"
+          title: "Development Build - Mac"
           files: |
-            certificate-bootstrapper
+            bin/certificate-bootstrapper
       - name: Build Windows binary
         run: make PLATFORM=windows/amd64
       - name: Release Windows binary
@@ -44,8 +44,8 @@ jobs:
         if: ${{ github.ref == 'refs/heads/master' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "windows_latest"
           prerelease: true
           title: "Development Build - Windows"
           files: |
-            certificate-bootstrapper.exe
+            bin/certificate-bootstrapper.exe

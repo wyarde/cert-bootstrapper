@@ -54,11 +54,6 @@ func execInContainer(ctx context.Context, cli *client.Client, id string, command
 	return output, nil
 }
 
-type archiveReaders struct {
-	linux   io.Reader
-	windows io.Reader
-}
-
 //go:embed scripts/bootstrap.sh
 var bootstrapLinux string
 

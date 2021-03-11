@@ -67,6 +67,7 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 	}).Info("Bootstrapping container...")
 
 	info, err := cli.ContainerInspect(ctx, id)
+	checkIfError(err)
 
 	if info.ContainerJSONBase.HostConfig.Isolation == "hyperv" {
 		log.Warning("This container is running in Hyper-V isolation, which is not supported. No action taken.")

@@ -54,54 +54,84 @@ func execInContainer(ctx context.Context, cli *client.Client, id string, command
 	return output, nil
 }
 
+type archiveReaders struct {
+	linux   io.Reader
+	windows io.Reader
+}
+
 //go:embed scripts/bootstrap.sh
 var bootstrapLinux string
 
 //go:embed scripts/bootstrap.ps1
 var bootstrapWindows string
 
-func bootstrap(ctx context.Context, cli *client.Client, id string, from string, cert []byte) {
+// OsData type describes Osspecific data requiredfor bootstrapping
+type OsData struct {
+	Archive io.Reader
+	Command []string
+}
+
+func generateArchive(input ...string) io.Reader {
+	out, err := archive.Generate(input...)
+	checkIfError(err)
+
+	return out
+}
+
+func getOsData(cert []byte) (archives map[string]OsData, err error) {
+
+	osData := map[string]OsData{
+		"linux": {
+			Archive: generateArchive("bootstrap.sh", bootstrapLinux, "cert.crt", string(cert)),
+			Command: []string{"sh", "/bootstrap.sh", "/cert.crt"},
+		},
+		"windows": {
+			Archive: generateArchive("bootstrap.ps1", bootstrapWindows, "cert.crt", string(cert)),
+			Command: []string{"powershell", "-Command", "/bootstrap.ps1", "/cert.crt"},
+		},
+	}
+
+	return osData, nil
+}
+
+func isHyperVContainer(ctx context.Context, cli *client.Client, id string) bool {
+	info, err := cli.ContainerInspect(ctx, id)
+	checkIfError(err)
+
+	return info.ContainerJSONBase.HostConfig.Isolation == "hyperv"
+}
+
+func getContainerOs(ctx context.Context, cli *client.Client, id string) string {
+	info, err := cli.ContainerInspect(ctx, id)
+	checkIfError(err)
+
+	return info.ContainerJSONBase.Platform
+}
+
+func bootstrap(ctx context.Context, cli *client.Client, id string, from string, osData map[string]OsData) {
 	log.WithFields(log.Fields{
 		"id":   id[0:12],
 		"from": from,
 	}).Info("Bootstrapping container...")
 
-	info, err := cli.ContainerInspect(ctx, id)
-	checkIfError(err)
-
-	if info.ContainerJSONBase.HostConfig.Isolation == "hyperv" {
+	if isHyperVContainer(ctx, cli, id) {
 		log.Warning("This container is running in Hyper-V isolation, which is not supported. No action taken.")
 		return
 	}
 
+	osName := getContainerOs(ctx, cli, id)
 	log.WithFields(log.Fields{
-		"os": info.ContainerJSONBase.Platform,
+		"os": osName,
 	}).Info()
 
-	var reader io.Reader
-	var bootstrapCmd []string
-
-	switch info.ContainerJSONBase.Platform {
-	case "linux":
-		reader, err = archive.Generate("bootstrap.sh", bootstrapLinux, "cert.crt", string(cert))
-		checkIfError(err)
-		bootstrapCmd = []string{"sh", "/bootstrap.sh", "/cert.crt"}
-	case "windows":
-		reader, err = archive.Generate("bootstrap.ps1", bootstrapWindows, "cert.crt", string(cert))
-		checkIfError(err)
-		bootstrapCmd = []string{"powershell", "-Command", "/bootstrap.ps1", "/cert.crt"}
-	default:
-		log.Warning("Don't know about this operating system. No action taken.")
-		return
-	}
-
 	log.Info("Copying files into container...")
-	err = cli.CopyToContainer(ctx, id, "/", reader, types.CopyToContainerOptions{})
+	err := cli.CopyToContainer(ctx, id, "/", osData[osName].Archive, types.CopyToContainerOptions{})
 	checkIfError(err)
 
 	log.Info("Running bootstrap script...")
-	output, err := execInContainer(ctx, cli, id, bootstrapCmd)
+	output, err := execInContainer(ctx, cli, id, osData[osName].Command)
 	checkIfError(err)
+
 	fmt.Println("==== Output bootstrap script ====")
 	fmt.Println(output)
 	fmt.Println("=================================")
@@ -123,8 +153,10 @@ func main() {
 	ctx := context.Background()
 	checkIfError(err)
 
-	msgs, errs := cli.Events(ctx, types.EventsOptions{})
+	osData, err := getOsData(cert)
 	checkIfError(err)
+
+	msgs, errs := cli.Events(ctx, types.EventsOptions{})
 
 	log.Info("Listening for new containers...")
 
@@ -135,7 +167,7 @@ func main() {
 			os.Exit(1)
 		case msg := <-msgs:
 			if msg.Status == "start" {
-				bootstrap(ctx, cli, msg.ID, msg.From, cert)
+				bootstrap(ctx, cli, msg.ID, msg.From, osData)
 			}
 		}
 	}

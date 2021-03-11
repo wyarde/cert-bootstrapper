@@ -13,12 +13,6 @@ RUN --mount=source=src,target=. \
     --mount=type=cache,target=/root/.cache/go-build \
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/certificate-bootstrapper .
 
-FROM base AS unit-test
-RUN --mount=source=src,target=. \
-    --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    mkdir /out && go test -v -coverprofile=/out/cover.out ./...
-
 FROM golangci/golangci-lint:v1.31.0-alpine AS lint-base
 
 FROM base AS lint
@@ -28,9 +22,6 @@ RUN --mount=source=src,target=. \
     --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/.cache/golangci-lint \
     golangci-lint run --timeout 10m0s ./...
-
-FROM scratch AS unit-test-coverage
-COPY --from=unit-test /out/cover.out /cover.out
 
 FROM scratch AS bin-unix
 COPY --from=build /out/certificate-bootstrapper /certificate-bootstrapper-Linux-x86_64

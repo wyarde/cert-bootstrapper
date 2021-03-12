@@ -2,7 +2,7 @@
 
 set -eu
 
-certificate="$1"
+certificate="/cert.pem"
 cp -- "$certificate" /usr/local/share/ca-certificates/cert.crt
 
 if command -v update-ca-certificates > /dev/null 2>&1;

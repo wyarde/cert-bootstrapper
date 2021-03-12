@@ -77,12 +77,12 @@ func getOsData(cert []byte) (archives map[string]OsData, err error) {
 
 	osData := map[string]OsData{
 		"linux": {
-			Archive: generateArchive("bootstrap.sh", bootstrapLinux, "cert.crt", string(cert)),
-			Command: []string{"sh", "/bootstrap.sh", "/cert.crt"},
+			Archive: generateArchive("bootstrap.sh", bootstrapLinux, "cert.pem", string(cert)),
+			Command: []string{"sh", "/bootstrap.sh"},
 		},
 		"windows": {
-			Archive: generateArchive("bootstrap.ps1", bootstrapWindows, "cert.crt", string(cert)),
-			Command: []string{"powershell", "-Command", "/bootstrap.ps1", "/cert.crt"},
+			Archive: generateArchive("bootstrap.ps1", bootstrapWindows, "cert.pem", string(cert)),
+			Command: []string{"powershell", "-NoProfile", "-Command", "/bootstrap.ps1"},
 		},
 	}
 
@@ -158,7 +158,7 @@ func main() {
 	for {
 		select {
 		case err := <-errs:
-			print(err)
+			log.Error(err)
 			os.Exit(1)
 		case msg := <-msgs:
 			if msg.Status == "start" {

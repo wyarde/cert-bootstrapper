@@ -1,7 +1,9 @@
 package main
 
 import (
+	"archive/tar"
 	"bufio"
+	"bytes"
 	"context"
 	_ "embed"
 	"fmt"
@@ -13,7 +15,6 @@ import (
 	"github.com/ahmetalpbalkan/dlog"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/archive"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -54,11 +55,63 @@ func execInContainer(ctx context.Context, cli *client.Client, id string, command
 	return output, nil
 }
 
-//go:embed scripts/bootstrap.sh
-var bootstrapLinux string
+// func Generate(input ...string) (io.Reader, error) {
+// 	files := parseStringPairs(input...)
+// 	buf := new(bytes.Buffer)
+// 	tw := tar.NewWriter(buf)
+// 	for _, file := range files {
+// 		name, content := file[0], file[1]
+// 		hdr := &tar.Header{
+// 			Name: name,
+// 			Size: int64(len(content)),
+// 		}
+// 		if err := tw.WriteHeader(hdr); err != nil {
+// 			return nil, err
+// 		}
+// 		if _, err := tw.Write([]byte(content)); err != nil {
+// 			return nil, err
+// 		}
+// 	}
+// 	if err := tw.Close(); err != nil {
+// 		return nil, err
+// 	}
+// 	return buf, nil
 
-//go:embed scripts/bootstrap.ps1
-var bootstrapWindows string
+// File holds the filename and its content
+type File struct {
+	Name    string
+	Content []byte
+	Mode    int64
+}
+
+func generateArchive(files ...File) io.Reader {
+	buf := new(bytes.Buffer)
+	tw := tar.NewWriter(buf)
+	for _, file := range files {
+		hdr := &tar.Header{
+			Name: file.Name,
+			Size: int64(len(file.Content)),
+			Mode: file.Mode,
+		}
+
+		err := tw.WriteHeader(hdr)
+		checkIfError(err)
+
+		_, err = tw.Write(file.Content)
+		checkIfError(err)
+	}
+
+	err := tw.Close()
+	checkIfError(err)
+
+	return buf
+}
+
+//go:embed bin/agent-Linux-x86_64
+var agentLinux []byte
+
+//go:embed bin/agent-Windows-x86_64.exe
+var agentWindows []byte
 
 // OsData type describes Osspecific data requiredfor bootstrapping
 type OsData struct {
@@ -66,23 +119,31 @@ type OsData struct {
 	Command []string
 }
 
-func generateArchive(input ...string) io.Reader {
-	out, err := archive.Generate(input...)
-	checkIfError(err)
-
-	return out
-}
-
 func getOsData(cert []byte) (archives map[string]OsData, err error) {
+	certFile := File{
+		Name:    "cert.pem",
+		Content: cert,
+		Mode:    444,
+	}
+	agentLinuxFile := File{
+		Name:    "bootstrap-agent",
+		Content: agentLinux,
+		Mode:    555,
+	}
+	agentWindowsFile := File{
+		Name:    "bootstrap-agent.exe",
+		Content: agentWindows,
+		Mode:    555,
+	}
 
 	osData := map[string]OsData{
 		"linux": {
-			Archive: generateArchive("bootstrap.sh", bootstrapLinux, "cert.pem", string(cert)),
-			Command: []string{"sh", "/bootstrap.sh"},
+			Archive: generateArchive(agentLinuxFile, certFile),
+			Command: []string{"./bootstrap-agent"},
 		},
 		"windows": {
-			Archive: generateArchive("bootstrap.ps1", bootstrapWindows, "cert.pem", string(cert)),
-			Command: []string{"powershell", "-NoProfile", "-Command", "/bootstrap.ps1"},
+			Archive: generateArchive(agentWindowsFile, certFile),
+			Command: []string{"bootstrap-agent.exe"},
 		},
 	}
 

@@ -119,32 +119,42 @@ type OsData struct {
 	Command []string
 }
 
-func getOsData(cert []byte) (archives map[string]OsData, err error) {
+func getOsData(containerOs string, cert []byte) (osData OsData, err error) {
 	certFile := File{
 		Name:    "cert.pem",
 		Content: cert,
 		Mode:    444,
 	}
-	agentLinuxFile := File{
-		Name:    "bootstrap-agent",
-		Content: agentLinux,
-		Mode:    555,
-	}
-	agentWindowsFile := File{
-		Name:    "bootstrap-agent.exe",
-		Content: agentWindows,
-		Mode:    555,
+
+	var (
+		agentFile File
+		command   []string
+	)
+
+	switch containerOs {
+	case "linux":
+		agentFile = File{
+			Name:    "bootstrap-agent",
+			Content: agentLinux,
+			Mode:    555,
+		}
+		command = []string{"./bootstrap-agent"}
+	case "windows":
+		agentFile = File{
+			Name:    "bootstrap-agent.exe",
+			Content: agentWindows,
+			Mode:    555,
+		}
+		command = []string{"./bootstrap-agent"}
+
+	default:
+		log.Error("Unknown operating system: ", containerOs)
+		os.Exit(1)
 	}
 
-	osData := map[string]OsData{
-		"linux": {
-			Archive: generateArchive(agentLinuxFile, certFile),
-			Command: []string{"./bootstrap-agent"},
-		},
-		"windows": {
-			Archive: generateArchive(agentWindowsFile, certFile),
-			Command: []string{"bootstrap-agent.exe"},
-		},
+	osData = OsData{
+		Archive: generateArchive(agentFile, certFile),
+		Command: command,
 	}
 
 	return osData, nil
@@ -164,7 +174,7 @@ func getContainerOs(ctx context.Context, cli *client.Client, id string) string {
 	return info.ContainerJSONBase.Platform
 }
 
-func bootstrap(ctx context.Context, cli *client.Client, id string, from string, osData map[string]OsData) {
+func bootstrap(ctx context.Context, cli *client.Client, id string, from string, cert []byte) {
 	log.WithFields(log.Fields{
 		"id":   id[0:12],
 		"from": from,
@@ -175,17 +185,20 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 		return
 	}
 
-	osName := getContainerOs(ctx, cli, id)
+	containerOs := getContainerOs(ctx, cli, id)
 	log.WithFields(log.Fields{
-		"os": osName,
+		"os": containerOs,
 	}).Info()
 
+	osData, err := getOsData(containerOs, cert)
+	checkIfError(err)
+
 	log.Info("Copying files into container...")
-	err := cli.CopyToContainer(ctx, id, "/", osData[osName].Archive, types.CopyToContainerOptions{})
+	err = cli.CopyToContainer(ctx, id, "/", osData.Archive, types.CopyToContainerOptions{})
 	checkIfError(err)
 
 	log.Info("Running bootstrap script...")
-	output, err := execInContainer(ctx, cli, id, osData[osName].Command)
+	output, err := execInContainer(ctx, cli, id, osData.Command)
 	checkIfError(err)
 
 	fmt.Println("==== Output bootstrap script ====")
@@ -209,9 +222,6 @@ func main() {
 	ctx := context.Background()
 	checkIfError(err)
 
-	osData, err := getOsData(cert)
-	checkIfError(err)
-
 	msgs, errs := cli.Events(ctx, types.EventsOptions{})
 
 	log.Info("Listening for new containers...")
@@ -223,7 +233,7 @@ func main() {
 			os.Exit(1)
 		case msg := <-msgs:
 			if msg.Status == "start" {
-				bootstrap(ctx, cli, msg.ID, msg.From, osData)
+				bootstrap(ctx, cli, msg.ID, msg.From, cert)
 			}
 		}
 	}

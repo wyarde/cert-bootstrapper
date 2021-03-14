@@ -3,14 +3,14 @@ module github.com/wyarde/certificate-bootstrapper
 go 1.16
 
 require (
-	github.com/Microsoft/hcsshim v0.8.15 // indirect
+	github.com/Microsoft/go-winio v0.4.17-0.20210211115548-6eac466e5fa3 // indirect
 	github.com/ahmetalpbalkan/dlog v0.0.0-20170105205344-4fb5f8204f26
-	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e // indirect
+	github.com/containerd/containerd v1.5.0-beta.1 // indirect
 	github.com/docker/docker v20.10.5+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/github/certstore v0.1.0
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/moby/sys/mount v0.2.0 // indirect
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.0

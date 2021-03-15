@@ -3,11 +3,14 @@ package linux
 import (
 	"os"
 	"os/exec"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func runUpdateCACertificates(cert []byte) error {
-	destinationFile := "/usr/local/share/ca-certificates/cert.crt"
+	log.Debug("Start of runUpdateCACertificates")
 
+	destinationFile := "/usr/local/share/ca-certificates/cert.crt"
 	err := os.WriteFile(destinationFile, cert, 0444)
 	if err != nil {
 		return err
@@ -17,9 +20,15 @@ func runUpdateCACertificates(cert []byte) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	log.Debug("End of runUpdateCACertificates")
 	return cmd.Run()
 }
 
-func Bootstrap(cert []byte) error {
+func Bootstrap() error {
+	cert, err := os.ReadFile("/cert.pem")
+	if err != nil {
+		return err
+	}
+
 	return runUpdateCACertificates(cert)
 }

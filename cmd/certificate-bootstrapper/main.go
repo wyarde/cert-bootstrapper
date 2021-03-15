@@ -34,8 +34,8 @@ func execInContainer(ctx context.Context, cli *client.Client, id string, command
 	execID, err := cli.ContainerExecCreate(ctx, id, types.ExecConfig{
 		AttachStdout: true,
 		AttachStderr: true,
-		Privileged:   true,
 		Cmd:          commands,
+		Privileged:   true,
 	})
 
 	if err != nil {
@@ -133,6 +133,7 @@ func getOsData(containerOs string, cert []byte) (osData OsData, err error) {
 	)
 
 	switch containerOs {
+
 	case "linux":
 		agentFile = File{
 			Name:    "bootstrap-agent",
@@ -140,13 +141,14 @@ func getOsData(containerOs string, cert []byte) (osData OsData, err error) {
 			Mode:    555,
 		}
 		command = []string{"./bootstrap-agent"}
+
 	case "windows":
 		agentFile = File{
 			Name:    "bootstrap-agent.exe",
 			Content: agentWindows,
 			Mode:    555,
 		}
-		command = []string{"./bootstrap-agent"}
+		command = []string{"bootstrap-agent.exe"}
 
 	default:
 		log.Error("Unknown operating system: ", containerOs)

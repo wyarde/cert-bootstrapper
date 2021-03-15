@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/wyarde/certificate-bootstrapper/cmd/agent/linux"
+	"github.com/wyarde/certificate-bootstrapper/cmd/agent/windows"
+
 	"os"
-	"os/exec"
 	"runtime"
 	"runtime/debug"
 	"time"
@@ -21,38 +23,23 @@ func checkIfError(err error) {
 	os.Exit(1)
 }
 
-func runUpdateCACertificates() {
-	input, err := os.ReadFile("/cert.pem")
-	checkIfError(err)
-
-	destinationFile := "/usr/local/share/ca-certificates/cert.crt"
-	err = os.WriteFile(destinationFile, input, 0444)
-	if err != nil {
-		log.Warning("Error creating file", destinationFile)
-		return
-	}
-
-	cmd := exec.Command("update-ca-certificates", "--verbose")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
-	checkIfError(err)
-}
-
 func main() {
 	log.SetFormatter(&log.TextFormatter{TimestampFormat: time.RFC3339Nano})
+
+	cert, err := os.ReadFile("/cert.pem")
+	checkIfError(err)
 
 	log.Info("Start of bootstrapper")
 	switch runtime.GOOS {
 	case "linux":
-		runUpdateCACertificates()
+		err = linux.Bootstrap(cert)
 	case "windows":
-		log.Info("Hello World")
+		err = windows.Bootstrap(cert)
 	default:
 		log.Error("Unknown operating system: ", runtime.GOOS)
 		os.Exit(1)
 	}
 
+	checkIfError(err)
 	log.Info("Done!")
 }

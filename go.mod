@@ -8,7 +8,6 @@ require (
 	github.com/containerd/containerd v1.5.0-beta.1 // indirect
 	github.com/docker/docker v20.10.5+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
-	github.com/github/certstore v0.1.0
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect

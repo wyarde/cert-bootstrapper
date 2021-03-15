@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"runtime"
 	"runtime/debug"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -40,6 +41,8 @@ func runUpdateCACertificates() {
 }
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{TimestampFormat: time.RFC3339Nano})
+
 	log.Info("Start of bootstrapper")
 	switch runtime.GOOS {
 	case "linux":

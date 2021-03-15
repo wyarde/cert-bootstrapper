@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime/debug"
+	"time"
 
 	"github.com/ahmetalpbalkan/dlog"
 	"github.com/docker/docker/api/types"
@@ -208,6 +209,8 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 }
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{TimestampFormat: time.RFC3339Nano})
+
 	if len(os.Args) != 2 {
 		log.Error("No certificate file specified!")
 		os.Exit(1)

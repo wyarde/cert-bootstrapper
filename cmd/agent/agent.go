@@ -1,22 +1,15 @@
 package main
 
 import (
-	"os"
-	"runtime/debug"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 func checkIfError(err error) {
-	if err == nil {
-		return
+	if err != nil {
+		log.Info(err)
 	}
-
-	log.Error(err)
-	debug.PrintStack()
-
-	os.Exit(1)
 }
 
 func AddCertToStore() error {

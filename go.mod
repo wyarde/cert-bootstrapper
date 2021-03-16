@@ -1,4 +1,4 @@
-module github.com/wyarde/certificate-bootstrapper
+module github.com/wyarde/cert-bootstrapper
 
 go 1.16
 

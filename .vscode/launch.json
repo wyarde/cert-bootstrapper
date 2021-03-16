@@ -7,7 +7,7 @@
     "mode": "debug",
     "program": "${file}",
     "args": ["${input:certFile}"],
-    "output": "${workspaceFolder}/bin/certificate-bootstrapper-debug"
+    "output": "${workspaceFolder}/bin/cert-bootstrapper-debug"
   }
   ],
   "inputs": [

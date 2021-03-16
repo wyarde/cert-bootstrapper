@@ -122,7 +122,7 @@ type OsData struct {
 
 func getOsData(containerOs string, cert []byte) (osData OsData, err error) {
 	certFile := File{
-		Name:    "cert.pem",
+		Name:    "/.cert-bootstrapper/ssl/cert.pem",
 		Content: cert,
 		Mode:    444,
 	}
@@ -136,19 +136,19 @@ func getOsData(containerOs string, cert []byte) (osData OsData, err error) {
 
 	case "linux":
 		agentFile = File{
-			Name:    "bootstrap-agent",
+			Name:    "/.cert-bootstrapper/bootstrap-agent",
 			Content: agentLinux,
 			Mode:    555,
 		}
-		command = []string{"./bootstrap-agent"}
+		command = []string{"/.cert-bootstrapper/bootstrap-agent"}
 
 	case "windows":
 		agentFile = File{
-			Name:    "bootstrap-agent.exe",
+			Name:    "/.cert-bootstrapper/bootstrap-agent.exe",
 			Content: agentWindows,
 			Mode:    555,
 		}
-		command = []string{"bootstrap-agent.exe"}
+		command = []string{"/.cert-bootstrapper/bootstrap-agent.exe"}
 
 	default:
 		log.Error("Unknown operating system: ", containerOs)

@@ -16,7 +16,7 @@ $ make PLATFORM=windows/amd64 # build for Windows x86_64
 You can then run the binary as follows:
 
 ```console
-$ ./bin/certificate-bootstrapper
+$ ./bin/cert-bootstrapper
 ```
 
 To run the linter and unit tests:

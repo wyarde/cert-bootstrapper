@@ -7,11 +7,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func runUpdateCACertificates(cert []byte) error {
-	log.Debug("Start of runUpdateCACertificates")
+func hideFile(filename string) {
+}
+
+func getCert() ([]byte, error) {
+	return os.ReadFile("/.cert-bootstrapper/ssl/cert.pem")
+}
+
+func addCertToStore() error {
+	var err error
+
+	cert, err := getCert()
+	if err != nil {
+		return err
+	}
 
 	destinationFile := "/usr/local/share/ca-certificates/cert.crt"
-	err := os.WriteFile(destinationFile, cert, 0444)
+	err = os.WriteFile(destinationFile, cert, 0444)
 	if err != nil {
 		return err
 	}
@@ -20,15 +32,40 @@ func runUpdateCACertificates(cert []byte) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Debug("End of runUpdateCACertificates")
-	return cmd.Run()
-}
-
-func bootstrap() error {
-	cert, err := os.ReadFile("/cert.pem")
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
 
-	return runUpdateCACertificates(cert)
+	return nil
+}
+
+func configureNpm() error {
+	var err error
+
+	cmd := exec.Command("npm", "config", "set", "cafile", "/.cert-bootstrapper/ssl/cert.pem")
+	err = cmd.Run()
+	if err != nil {
+		// Since npm isn't there, generate config in common default locations in case npm is added later
+		log.Debug("  Npm NOT installed. Creating configuration files at the default locations.")
+
+		for _, prefix := range []string{"/usr", "/usr/local"} {
+			path := prefix + "/etc"
+			npmrcFile := path + "/npmrc"
+
+			_ = os.Mkdir(path, os.ModeDir)
+			f, err := os.OpenFile(npmrcFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			_, err = f.WriteString("cafile=/.cert-bootstrapper/ssl/cert.pem\n")
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

@@ -4,49 +4,42 @@ import (
 	_ "embed"
 	"os"
 	"os/exec"
-
-	log "github.com/sirupsen/logrus"
+	"syscall"
 )
 
-//go:embed ssl/cacert.pem
-var certBundle []byte
-
-func configureNpm() error {
-	log.Debug("Start of configureNpm")
-
-	_ = os.Mkdir("/ssl", os.ModePerm)
-	destinationFile := "/ssl/cacert.pem"
-	err := os.WriteFile(destinationFile, certBundle, 0444)
+func hideFile(filename string) {
+	filenameW, err := syscall.UTF16PtrFromString(filename)
 	if err != nil {
-		return err
+		syscall.SetFileAttributes(filenameW, syscall.FILE_ATTRIBUTE_HIDDEN)
 	}
-
-	log.Debug("End of configureNpm")
-	return nil
 }
 
 func addCertToStore() error {
-	log.Debug("Start of addCertToStore")
+	var err error
 
-	cmd := exec.Command("certutil", "-addstore", "-f", "Root", "/cert.pem")
+	cmd := exec.Command("certutil", "-addstore", "-f", "Root", "/.cert-bootstrapper/ssl/cert.pem")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Debug("End of addCertToStore")
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
 
-	return cmd.Run()
+	return nil
 }
 
-func bootstrap() error {
+func configureNpm() error {
 	var err error
 
-	err = addCertToStore()
+	cmd := exec.Command("setx", "/m", "NODE_EXTRA_CA_CERTS", "/.cert-bootstrapper/ssl/cert.pem")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
-	err = configureNpm()
-	if err != nil {
-		return err
-	}
+
 	return nil
 }

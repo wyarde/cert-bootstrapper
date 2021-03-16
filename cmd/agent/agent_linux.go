@@ -1,4 +1,4 @@
-package linux
+package main
 
 import (
 	"os"
@@ -24,7 +24,7 @@ func runUpdateCACertificates(cert []byte) error {
 	return cmd.Run()
 }
 
-func Bootstrap() error {
+func bootstrap() error {
 	cert, err := os.ReadFile("/cert.pem")
 	if err != nil {
 		return err

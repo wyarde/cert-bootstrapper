@@ -1,4 +1,4 @@
-package windows
+package main
 
 import (
 	_ "embed"
@@ -37,7 +37,7 @@ func addCertToStore() error {
 	return cmd.Run()
 }
 
-func Bootstrap() error {
+func bootstrap() error {
 	var err error
 
 	err = addCertToStore()

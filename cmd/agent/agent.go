@@ -1,11 +1,7 @@
 package main
 
 import (
-	"github.com/wyarde/certificate-bootstrapper/cmd/agent/linux"
-	"github.com/wyarde/certificate-bootstrapper/cmd/agent/windows"
-
 	"os"
-	"runtime"
 	"runtime/debug"
 	"time"
 
@@ -28,18 +24,7 @@ func main() {
 
 	log.Info("Start of bootstrapper")
 
-	var err error
-
-	switch runtime.GOOS {
-	case "linux":
-		err = linux.Bootstrap()
-	case "windows":
-		err = windows.Bootstrap()
-	default:
-		log.Error("Unknown operating system: ", runtime.GOOS)
-		os.Exit(1)
-	}
-
+	err := bootstrap()
 	checkIfError(err)
 
 	log.Info("Done!")

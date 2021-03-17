@@ -8,11 +8,10 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM base AS build
 ARG TARGETOS
 ARG TARGETARCH
-ARG COMPONENT
 RUN --mount=source=./cmd,target=./cmd \    
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/ ./cmd/${COMPONENT} 
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/ ./cmd/cert-bootstrapper 
 
 FROM golangci/golangci-lint:v1.31.0-alpine AS lint-base
 
@@ -24,14 +23,13 @@ RUN --mount=source=./cmd,target=./cmd \
     --mount=type=cache,target=/root/.cache/golangci-lint \
     golangci-lint run --timeout 10m0s ./cmd/...
 
-FROM scratch AS bin-unix
-ARG COMPONENT
-COPY --from=build /out/${COMPONENT} /${COMPONENT}-Linux-x86_64
+FROM scratch AS bin-linux
+COPY --from=build /out/cert-bootstrapper /cert-bootstrapper-Linux-x86_64
 
-FROM bin-unix AS bin-linux
+FROM bin-linux as image
+ENTRYPOINT [ "/cert-bootstrapper-Linux-x86_64" ]
 
 FROM scratch AS bin-windows
-ARG COMPONENT
-COPY --from=build /out/${COMPONENT}.exe /${COMPONENT}-Windows-x86_64.exe
+COPY --from=build /out/cert-bootstrapper.exe /cert-bootstrapper-Windows-x86_64.exe
 
 FROM bin-${TARGETOS} as bin

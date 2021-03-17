@@ -7,12 +7,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Build Linux binary
-        run: make PLATFORM=linux/amd64
-      - name: Build Windows binary
-        run: make PLATFORM=windows/amd64
       - name: Run linter
         run: make lint
+      - name: Build binaries
+        run: make bins
+      - name: Build docker image
+        run: make image
       - name: Release binaries
         uses: "marvinpinto/action-automatic-releases@latest"
         if: ${{ github.ref == 'refs/heads/master' }}

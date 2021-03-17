@@ -5,24 +5,36 @@ latter can easily be substituted with your scripting tool of choice.
 
 ## Getting started
 
-Building the project will output a static binary in the bin/ folder. The
- platform can be changed using the `PLATFORM` variable:
+You can run the certificate bootstrapper as follows:
+
 ```console
-$ make                        # build for your host OS
-$ make PLATFORM=linux/amd64   # build for Linux x86_64
-$ make PLATFORM=windows/amd64 # build for Windows x86_64
+# linux
+$ docker run -d --restart unless-stopped \
+  -v /var/run.docker.sock:/var/run/docker.sock \
+  -v /path/to/my_cert.pem:/cert.pem \
+  wyarde/cert-bootstrapper
+
+# windows
+$ docker run -d --restart unless-stopped \
+  -v //var/run/docker.sock:/var/run/docker.sock \
+  -v /path/to/my_cert.pem:/cert.pem \
+  wyarde/cert-bootstrapper
 ```
 
-You can then run the binary as follows:
-
+To build the Docker image yourself:
 ```console
-$ ./bin/cert-bootstrapper
+$ make  
 ```
 
-To run the linter and unit tests:
+If needed, the build can also output linux and windows binaries in bin/:
+```
+$ make bins
+```
+
+To run the linter:
 
 ```console
-$ make test
+$ make lint
 ```
 
 ## Containerized go development environment

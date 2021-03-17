@@ -179,9 +179,18 @@ func getContainerOs(ctx context.Context, cli *client.Client, id string) string {
 
 func bootstrap(ctx context.Context, cli *client.Client, id string, from string, cert []byte) {
 	log.WithFields(log.Fields{
-		"id":   id[0:12],
+		"id":   id,
 		"from": from,
 	}).Info("Bootstrapping container...")
+
+	hostname, err := os.Hostname()
+	checkIfError(err)
+
+	log.WithField("hostname", hostname).Info()
+	if id == hostname {
+		log.Info("This is me, don't want to touch myself. No action taken.")
+		return
+	}
 
 	if isHyperVContainer(ctx, cli, id) {
 		log.Warning("This container is running in Hyper-V isolation, which is not supported. No action taken.")
@@ -189,9 +198,7 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 	}
 
 	containerOs := getContainerOs(ctx, cli, id)
-	log.WithFields(log.Fields{
-		"os": containerOs,
-	}).Info()
+	log.WithField("os", containerOs).Info()
 
 	osData, err := getOsData(containerOs, cert)
 	checkIfError(err)
@@ -213,12 +220,14 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 func main() {
 	log.SetFormatter(&log.TextFormatter{TimestampFormat: time.RFC3339Nano})
 
-	if len(os.Args) != 2 {
-		log.Error("No certificate file specified!")
-		os.Exit(1)
+	certFilename := "cert.pem"
+	if len(os.Args) >= 2 {
+		certFilename = os.Args[1]
 	}
 
-	cert, err := ioutil.ReadFile(os.Args[1])
+	log.WithField("certFilename", certFilename).Info("Reading certificate file...")
+
+	cert, err := ioutil.ReadFile(certFilename)
 	checkIfError(err)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -238,7 +247,7 @@ func main() {
 			os.Exit(1)
 		case msg := <-msgs:
 			if msg.Status == "start" {
-				bootstrap(ctx, cli, msg.ID, msg.From, cert)
+				bootstrap(ctx, cli, msg.ID[0:12], msg.From, cert)
 			}
 		}
 	}

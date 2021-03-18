@@ -8,9 +8,24 @@ jobs:
       - 
         name: Checkout code
         uses: actions/checkout@v2
-      - 
-        name: Run linter
-        run: make lint
+      -
+        name: Build linux agent
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.agent
+          target: bin
+          platform: linux
+          outputs: cmd/cert-bootstrapper/bin/
+      -
+        name: Build windows agent
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.agent
+          target: bin
+          platform: windows
+          outputs: cmd/cert-bootstrapper/bin/
       -
         if: ${{ github.ref == 'refs/heads/master' }}
         name: Login to DockerHub
@@ -24,6 +39,5 @@ jobs:
         with:
           context: .
           file: Dockerfile.cert-bootstrapper
-          target: image
           push: ${{ github.ref == 'refs/heads/master' }}
           tags: wyarde/cert-bootstrapper:latest            

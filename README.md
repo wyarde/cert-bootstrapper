@@ -42,7 +42,3 @@ To run the linter:
 ```shell
 make lint
 ```
-
-## Containerized go development environment
-
-The Dockerfile and Makefile in this project were inspired on: ![containerized-go-dev](https://github.com/chris-crone/containerized-go-dev/)

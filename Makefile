@@ -7,30 +7,22 @@ all: agents image
 lint: lint-cert-bootstrapper lint-agents
 
 # Agent binaries are required for various tasks
-bins: agents
+bin: agents
 image: agents
 lint-cert-bootstrapper: agents
 
-.PHONY: bins
-bins:
+.PHONY: bin
+bin:
 	@docker build . \
 		--file Dockerfile.cert-bootstrapper \
-		--target bin \
-		--output bin/ \
-		--platform linux
-
-	@docker build . \
-		--file Dockerfile.cert-bootstrapper \
-		--target bin \
-		--output bin/ \
-		--platform windows
+		--target runtime \
+		--output bin/
 
 .PHONY: image
 image:
 	@docker build . \
 		--file Dockerfile.cert-bootstrapper \
-		--target image \
-		--platform linux \
+		--target runtime \
 		--tag wyarde/cert-bootstrapper:latest
 
 .PHONY: agents
@@ -50,12 +42,7 @@ agents:
 lint-cert-bootstrapper:
 	@docker build . \
 		--file Dockerfile.cert-bootstrapper \
-		--target lint\
-		--platform linux
-	@docker build . \
-		--file Dockerfile.cert-bootstrapper \
-		--target lint \
-		--platform linux
+		--target lint
 
 .PHONY: lint-agents
 lint-agents:

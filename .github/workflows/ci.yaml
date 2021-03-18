@@ -11,9 +11,6 @@ jobs:
       - 
         name: Run linter
         run: make lint
-      - 
-        name: Build binaries
-        run: make bins
       -
         if: ${{ github.ref == 'refs/heads/master' }}
         name: Login to DockerHub
@@ -22,12 +19,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        if: ${{ github.ref == 'refs/heads/master' }}
         name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           file: Dockerfile.cert-bootstrapper
           target: image
-          push: true
+          push: ${{ github.ref == 'refs/heads/master' }}
           tags: wyarde/cert-bootstrapper:latest            

@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM} golang:1.16 AS base
+FROM --platform=linux golang:1.16 AS base
 WORKDIR /src
 ENV CGO_ENABLED=0
 COPY go.* .
@@ -23,13 +23,6 @@ RUN --mount=source=./cmd/cert-bootstrapper,target=./cmd/cert-bootstrapper \
     --mount=type=cache,target=/root/.cache/golangci-lint \
     golangci-lint run --timeout 10m0s ./cmd/cert-bootstrapper/...
 
-FROM scratch AS bin-linux
+FROM scratch AS runtime
 COPY --from=build /out/cert-bootstrapper /cert-bootstrapper-Linux-x86_64
-
-FROM bin-linux as image
 ENTRYPOINT [ "/cert-bootstrapper-Linux-x86_64" ]
-
-FROM scratch AS bin-windows
-COPY --from=build /out/cert-bootstrapper.exe /cert-bootstrapper-Windows-x86_64.exe
-
-FROM bin-${TARGETOS} as bin

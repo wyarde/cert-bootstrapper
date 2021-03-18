@@ -28,7 +28,7 @@ func addCertToStore() error {
 		return err
 	}
 
-	cmd := exec.Command("update-ca-certificates", "--verbose")
+	cmd := exec.Command("update-ca-certificates")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

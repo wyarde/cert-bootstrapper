@@ -3,14 +3,13 @@ export DOCKER_BUILDKIT=1
 .PHONY: all
 all: agents image
 
-.PHONY: agents
-agents: agent-linux agent-windows
-
 .PHONY: lint
-lint: lint-cert-bootstrapper lint-agent
+lint: lint-cert-bootstrapper lint-agents
 
+# Agent binaries are required for various tasks
 bins: agents
 image: agents
+lint-cert-bootstrapper: agents
 
 .PHONY: bins
 bins:
@@ -34,16 +33,13 @@ image:
 		--platform linux \
 		--tag wyarde/cert-bootstrapper:latest
 
-.PHONY: agent-linux
-agent-linux:
+.PHONY: agents
+agents:
 	@docker build . \
 		--file Dockerfile.agent \
 		--target bin \
 		--output cmd/cert-bootstrapper/bin/ \
 		--platform linux
-
-.PHONY: agent-windows
-agent-windows:
 	@docker build . \
 		--file Dockerfile.agent \
 		--target bin \
@@ -54,10 +50,16 @@ agent-windows:
 lint-cert-bootstrapper:
 	@docker build . \
 		--file Dockerfile.cert-bootstrapper \
-		--target lint
+		--target lint\
+		--platform linux
+	@docker build . \
+		--file Dockerfile.cert-bootstrapper \
+		--target lint \
+		--platform linux
 
-.PHONY: lint-agent
-lint-agent:
+.PHONY: lint-agents
+lint-agents:
 	@docker build . \
 		--file Dockerfile.agent \
-		--target lint
+		--target lint \
+		--platform linux

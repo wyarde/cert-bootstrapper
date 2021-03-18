@@ -15,7 +15,7 @@ jobs:
           context: .
           file: Dockerfile.agent
           target: bin
-          platform: linux
+          platforms: linux
           outputs: cmd/cert-bootstrapper/bin/
       -
         name: Build windows agent
@@ -24,7 +24,7 @@ jobs:
           context: .
           file: Dockerfile.agent
           target: bin
-          platform: windows
+          platforms: windows
           outputs: cmd/cert-bootstrapper/bin/
       -
         if: ${{ github.ref == 'refs/heads/master' }}

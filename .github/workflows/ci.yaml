@@ -5,21 +5,29 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - 
+        name: Checkout code
         uses: actions/checkout@v2
-      - name: Run linter
+      - 
+        name: Run linter
         run: make lint
-      - name: Build binaries
+      - 
+        name: Build binaries
         run: make bins
-      - name: Build docker image
-        run: make image
-      - name: Release binaries
-        uses: "marvinpinto/action-automatic-releases@latest"
+      -
         if: ${{ github.ref == 'refs/heads/master' }}
+        name: Login to DockerHub
+        uses: docker/login-action@v1
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            bin/*
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        if: ${{ github.ref == 'refs/heads/master' }}
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.cert-bootstrapper
+          target: image
+          push: true
+          tags: wyarde/cert-bootstrapper:latest            

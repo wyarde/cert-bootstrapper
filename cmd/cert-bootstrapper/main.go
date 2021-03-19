@@ -220,7 +220,7 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 func main() {
 	log.SetFormatter(&log.TextFormatter{TimestampFormat: time.RFC3339Nano})
 
-	certFilename := "cert.pem"
+	certFilename := "ssl/cert.pem"
 	if len(os.Args) >= 2 {
 		certFilename = os.Args[1]
 	}

@@ -24,17 +24,22 @@ docker run -d --restart unless-stopped \
 
 Running a Linux container on Windows still requires some trickery. Follow following steps:
 
-1. Enable experimental mode to allow Linux Containers on Windows (LCOW)
-2. Get ip address of the docker nat interface
+1. Get ip address of the docker nat interface
 
 ```shell
   docker network inspect -f '{{range .IPAM.Config}}{{.Gateway}}{{end}}' nat
 ```
 
-3. Add configuration in `daemon.json` to listen to the docker nat interface address
-   docker run --rm --platform=linux -e DOCKER_HOST=tcp://<docker_nat_network_ip>:2375 -v c:/tmp/:/ssl/ wyarde/cert-bootstrapper ssl/cert.pem
+2. Update/create `c:\ProgramData\Docker\config\daemon.json` to enable experimental mode to allow Linux Containers on Windows (LCOW) and listen to the docker nat interface address
 
-4. Start the bootstrapper
+```json
+{
+  "experimental": true,
+  "hosts": ["tcp://<docker_nat_network_ip>"]
+}
+```
+
+3. Start the bootstrapper
 
 ```shell
 docker run --platform=linux -d --restart unless-stopped \

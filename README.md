@@ -35,7 +35,10 @@ Follow following steps if you know what you're doing and still would like to pro
    ```json
    {
      "experimental": true,
-     "hosts": ["tcp://<docker_nat_network_ip>"]
+     "hosts": [
+       "npipe:////./pipe/docker_engine",
+       "tcp://<docker_nat_network_ip>"
+     ]
    }
    ```
 

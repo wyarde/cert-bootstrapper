@@ -26,27 +26,29 @@ Running a Linux container on Windows still requires some trickery. Follow follow
 
 1. Get ip address of the docker nat interface
 
-```shell
-  docker network inspect -f '{{range .IPAM.Config}}{{.Gateway}}{{end}}' nat
-```
+   ```shell
+     docker network inspect -f '{{range .IPAM.Config}}{{.Gateway}}{{end}}' nat
+   ```
 
 2. Update/create `c:\ProgramData\Docker\config\daemon.json` to enable experimental mode to allow Linux Containers on Windows (LCOW) and listen to the docker nat interface address
 
-```json
-{
-  "experimental": true,
-  "hosts": ["tcp://<docker_nat_network_ip>"]
-}
-```
+   ```json
+   {
+     "experimental": true,
+     "hosts": ["tcp://<docker_nat_network_ip>"]
+   }
+   ```
 
-3. Start the bootstrapper
+3. Rename your certificate to `cert.pem`
 
-```shell
-docker run --platform=linux -d --restart unless-stopped \
- -e DOCKER_HOST=tcp://<docker_nat_network_ip>:2375
--v c:/path/to/my_cert_pem/:/ssl/ \
- wyarde/cert-bootstrapper
-```
+4. Start the bootstrapper
+
+   ```shell
+   docker run --platform=linux -d --restart unless-stopped ``
+     -e DOCKER_HOST=tcp://<docker_nat_network_ip>:2375 ``
+     -v c:/path/to/cert_pem/:/ssl/ ``
+     wyarde/cert-bootstrapper
+   ```
 
 ## Build it yourself
 

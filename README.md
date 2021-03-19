@@ -13,11 +13,12 @@ latter can easily be substituted with your scripting tool of choice.
 
 You can run the certificate bootstrapper as follows:
 
-````shell
+```shell
 docker run -d --restart unless-stopped \
   -v /var/run.docker.sock:/var/run/docker.sock \
   -v /path/to/my_cert/my_cert.pem:/ssl/cert.pem \
   wyarde/cert-bootstrapper
+```
 
 ### Windows
 
@@ -61,4 +62,7 @@ To run the linter:
 ```shell
 make lint
 ```
-````
+
+```
+
+```

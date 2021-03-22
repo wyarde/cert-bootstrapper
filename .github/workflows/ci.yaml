@@ -46,7 +46,7 @@ jobs:
           file: Dockerfile
           target: runtime-Linux
           push: ${{ github.ref == 'refs/heads/master' }}
-          tags: wyarde/cert-bootstrapper:linux
+          tags: ${{ github.repository }}:linux
 
   ci_windows:
     if: ${{ github.ref == 'refs/heads/master' }}
@@ -69,11 +69,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Image build - Windows
         run: |
-          docker build --target runtime-Windows -t wyarde/cert-bootstrapper:nanoserver-1809 .
-          docker push wyarde/cert-bootstrapper:nanoserver-1809
-      - name: Create Docker manifest
+          docker build --target runtime-Windows -t ${{ github.repository }}:nanoserver-1809 .
+          docker push ${{ github.repository }}:nanoserver-1809
+      - name: Create and push Docker manifest
         run: |
-          docker manifest create \
-            wyarde/cert-bootstrapper:latest 
-            --amend wyarde/cert-bootstrapper:linux \
-            --amend wyarde/cert-bootstrapper:nanoserver-1809
+          docker manifest create ${{ github.repository }}:latest --amend ${{ github.repository }}:linux --amend ${{ github.repository }}:nanoserver-1809
+          docker manifest push ${{ github.repository }}:latest

@@ -48,6 +48,7 @@ jobs:
           push: ${{ github.ref == 'refs/heads/master' }}
           tags: wyarde/cert-bootstrapper:latest
   ci_windows:
+    needs: ci_linux
     name: CI - Windows
     runs-on: windows-2019
     steps:

@@ -71,3 +71,9 @@ jobs:
         run: |
           docker build --target runtime-Windows -t wyarde/cert-bootstrapper:nanoserver-1809 .
           docker push wyarde/cert-bootstrapper:nanoserver-1809
+      - name: Create Docker manifest
+        run: |
+          docker manifest create \
+            wyarde/cert-bootstrapper:latest 
+            --amend wyarde/cert-bootstrapper:linux \
+            --amend wyarde/cert-bootstrapper:nanoserver-1809

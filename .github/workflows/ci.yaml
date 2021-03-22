@@ -47,7 +47,9 @@ jobs:
           target: runtime-Linux
           push: ${{ github.ref == 'refs/heads/master' }}
           tags: wyarde/cert-bootstrapper:latest
+
   ci_windows:
+    if: ${{ github.ref == 'refs/heads/master' }}
     needs: ci_linux
     name: CI - Windows
     runs-on: windows-2019
@@ -60,17 +62,12 @@ jobs:
           latest: true
           fileName: cert-bootstrapper-Windows-x86_64.exe
           out-file-path: bin/
-      - if: ${{ github.ref == 'refs/heads/master' }}
-        name: Login to DockerHub
+      - name: Login to DockerHub
         uses: azure/docker-login@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Image build - Windows
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: Dockerfile
-          target: runtime-Windows
-          push: ${{ github.ref == 'refs/heads/master' }}
-          tags: wyarde/cert-bootstrapper:latest
+        run: |
+          docker build --target runtime-Windows -t wyarde/cert-bootstrapper:latest .
+          docker push wyarde/cert-bootstrapper:latest

@@ -55,8 +55,7 @@ Follow following steps if you know what you're doing and still would like to pro
 
 ## Build it yourself
 
-The only requirements to build and use this project are Docker and `make`. The
-latter can easily be substituted with your scripting tool of choice.
+The only requirements to build and use this project are Docker, `make`, and `sed`.
 
 To build the Docker image yourself:
 

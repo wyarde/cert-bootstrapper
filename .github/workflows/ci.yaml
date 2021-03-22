@@ -1,43 +1,75 @@
 name: Continuous Integration
 on: [push]
 jobs:
-  ci:
-    name: CI
+  ci_linux:
+    name: CI - Linux
     runs-on: ubuntu-latest
     steps:
-      - 
-        name: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v2
-      -
-        name: Build linux agent
+      - name: Build - Linux
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.agent
+          file: Dockerfile
           target: bin
           platforms: linux
-          outputs: cmd/cert-bootstrapper/bin/
-      -
-        name: Build windows agent
+          outputs: bin/
+      - name: Build - Windows
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.agent
+          file: Dockerfile
           target: bin
           platforms: windows
-          outputs: cmd/cert-bootstrapper/bin/
-      -
-        if: ${{ github.ref == 'refs/heads/master' }}
+          outputs: bin/
+      - if: ${{ github.ref == 'refs/heads/master' }}
+        name: Release binaries
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            bin/*
+      - if: ${{ github.ref == 'refs/heads/master' }}
         name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
+      - name: Image build - Linux
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: Dockerfile.cert-bootstrapper
+          file: Dockerfile
+          target: runtime-Linux
           push: ${{ github.ref == 'refs/heads/master' }}
-          tags: wyarde/cert-bootstrapper:latest            
+          tags: wyarde/cert-bootstrapper:latest
+  ci_windows:
+    name: CI - Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: robinraju/release-downloader@v1
+        with:
+          repository: $GITHUB_REPOSITORY
+          latest: true
+          fileName: cert-bootstrapper-Windows-x86_64.exe
+          out-file-path: bin/
+      - if: ${{ github.ref == 'refs/heads/master' }}
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Image build - Windows
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          target: runtime-Windows
+          push: ${{ github.ref == 'refs/heads/master' }}
+          tags: wyarde/cert-bootstrapper:latest

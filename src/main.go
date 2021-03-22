@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"runtime/debug"
 	"time"
 
@@ -108,11 +109,8 @@ func generateArchive(files ...File) io.Reader {
 	return buf
 }
 
-//go:embed bin/agent-Linux-x86_64
-var agentLinux []byte
-
-//go:embed bin/agent-Windows-x86_64.exe
-var agentWindows []byte
+//go:embed bin/agent
+var agent []byte
 
 // OsData type describes Osspecific data requiredfor bootstrapping
 type OsData struct {
@@ -127,37 +125,20 @@ func getOsData(containerOs string, cert []byte) (osData OsData, err error) {
 		Mode:    444,
 	}
 
-	var (
-		agentFile File
-		command   []string
-	)
+	agentFileName := "/.cert-bootstrapper/bootstrap-agent"
+	if containerOs == "windows" {
+		agentFileName = fmt.Sprintf("%s.exe", agentFileName)
+	}
 
-	switch containerOs {
-
-	case "linux":
-		agentFile = File{
-			Name:    "/.cert-bootstrapper/bootstrap-agent",
-			Content: agentLinux,
-			Mode:    555,
-		}
-		command = []string{"/.cert-bootstrapper/bootstrap-agent"}
-
-	case "windows":
-		agentFile = File{
-			Name:    "/.cert-bootstrapper/bootstrap-agent.exe",
-			Content: agentWindows,
-			Mode:    555,
-		}
-		command = []string{"/.cert-bootstrapper/bootstrap-agent.exe"}
-
-	default:
-		log.Error("Unknown operating system: ", containerOs)
-		os.Exit(1)
+	agentFile := File{
+		Name:    agentFileName,
+		Content: agent,
+		Mode:    555,
 	}
 
 	osData = OsData{
 		Archive: generateArchive(agentFile, certFile),
-		Command: command,
+		Command: []string{agentFileName},
 	}
 
 	return osData, nil
@@ -199,6 +180,11 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 
 	containerOs := getContainerOs(ctx, cli, id)
 	log.WithField("os", containerOs).Info()
+
+	if containerOs != runtime.GOOS {
+		log.Warningf("Container OS %s doesn't match host OS %s. No action taken.", containerOs, runtime.GOOS)
+		return
+	}
 
 	osData, err := getOsData(containerOs, cert)
 	checkIfError(err)

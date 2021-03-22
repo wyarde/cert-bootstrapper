@@ -46,7 +46,7 @@ jobs:
           file: Dockerfile
           target: runtime-Linux
           push: ${{ github.ref == 'refs/heads/master' }}
-          tags: wyarde/cert-bootstrapper:latest
+          tags: wyarde/cert-bootstrapper:linux
 
   ci_windows:
     if: ${{ github.ref == 'refs/heads/master' }}
@@ -69,5 +69,5 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Image build - Windows
         run: |
-          docker build --target runtime-Windows -t wyarde/cert-bootstrapper:latest .
-          docker push wyarde/cert-bootstrapper:latest
+          docker build --target runtime-Windows -t wyarde/cert-bootstrapper:nanoserver-1809 .
+          docker push wyarde/cert-bootstrapper:nanoserver-1809

@@ -74,7 +74,3 @@ To run the linter:
 ```shell
 make lint
 ```
-
-```
-
-```

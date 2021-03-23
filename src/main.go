@@ -201,6 +201,7 @@ func bootstrap(ctx context.Context, cli *client.Client, id string, from string, 
 	fmt.Println(output)
 	fmt.Println("=================================")
 	log.Info("Done!")
+	fmt.Println("\n")
 }
 
 func main() {

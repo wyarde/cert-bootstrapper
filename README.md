@@ -22,11 +22,13 @@ docker run -d --restart unless-stopped \
 Make sure your certificate is named `cert.pem`. You can then run the certificate bootstrapper as follows:
 
 ```shell
-docker run -d --restart unless-stopped --isolation process ``
+docker run -d --restart unless-stopped ``
  -v \\.\pipe\docker_engine:\\.\pipe\docker_engine ``
  -v c:/path/to/cert_pem/:c:/ssl/ ``
  wyarde/cert-bootstrapper
 ```
+
+On Windows 10, you might want to include `--isolation process`, so the bootstrapper can react quicker to new containers. This is not required on Windows Server, since there isolation is set to `process` by default.
 
 ## Build it yourself
 

@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/windows/nanoserver:1809-amd64 as runtime-Windows
 COPY bin/cert-bootstrapper-Windows-x86_64.exe /
-ENTRYPOINT ["\cert-bootstrapper-Windows-x86_64.exe"]
+USER ContainerAdministrator
+ENTRYPOINT "c:\cert-bootstrapper-Windows-x86_64.exe"
 
 FROM --platform=${BUILDPLATFORM} golang:1.16 AS base
 WORKDIR /project

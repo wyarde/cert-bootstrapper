@@ -28,6 +28,14 @@ func ConfigureNpm() error {
 	return err
 }
 
+func ConfigureArtifactoryCli() error {
+	log.Debug("  Start of ConfigureArtifactoryCli")
+	err := configureArtifactoryCli()
+	log.Debug("  End of ConfigureArtifactoryCli")
+
+	return err
+}
+
 func main() {
 	log.SetFormatter(&log.TextFormatter{TimestampFormat: time.RFC3339Nano})
 	log.SetLevel(log.DebugLevel)
@@ -41,6 +49,9 @@ func main() {
 	checkIfError(err)
 
 	err = ConfigureNpm()
+	checkIfError(err)
+
+	err = ConfigureArtifactoryCli()
 	checkIfError(err)
 
 	log.Info("Done!")

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -65,6 +66,33 @@ func configureNpm() error {
 				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+func configureArtifactoryCli() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	certFolder := filepath.Join(home, ".jfrog/security/certs")
+	err = os.MkdirAll(certFolder, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	destinationFile := filepath.Join(certFolder, "cert.pem")
+
+	cert, err := getCert()
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(destinationFile, cert, 0444)
+	if err != nil {
+		return err
 	}
 
 	return nil

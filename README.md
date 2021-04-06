@@ -12,7 +12,7 @@ You can run the certificate bootstrapper as follows:
 
 ```shell
 docker run -d --restart unless-stopped \
-  -v /var/run.docker.sock:/var/run/docker.sock \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -v /path/to/my_cert/my_cert.pem:/ssl/cert.pem \
   wyarde/cert-bootstrapper
 ```

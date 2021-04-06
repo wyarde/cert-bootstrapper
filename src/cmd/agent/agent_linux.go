@@ -51,8 +51,10 @@ func configureNpm() error {
 		log.Debug("  Npm NOT installed. Creating configuration files at the default locations.")
 
 		for _, prefix := range []string{"/usr", "/usr/local"} {
-			path := prefix + "/etc"
-			npmrcFile := path + "/npmrc"
+			path := filepath.Join(prefix, "etc")
+			npmrcFile := filePath.Join(path, "npmrc")
+
+			log.WithField("npmrcFile", npmrcFile).Debug()
 
 			_ = os.Mkdir(path, os.ModeDir)
 			f, err := os.OpenFile(npmrcFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

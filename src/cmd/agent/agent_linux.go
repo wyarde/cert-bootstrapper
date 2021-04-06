@@ -23,8 +23,8 @@ func addCertToStore() error {
 		return err
 	}
 
-	destinationFile := "/usr/local/share/ca-certificates/cert.crt"
-	err = os.WriteFile(destinationFile, cert, 0444)
+	f := "/usr/local/share/ca-certificates/cert.crt"
+	err = os.WriteFile(f, cert, 0444)
 	if err != nil {
 		return err
 	}
@@ -72,27 +72,39 @@ func configureNpm() error {
 }
 
 func configureArtifactoryCli() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	certFolder := filepath.Join(home, ".jfrog/security/certs")
-	err = os.MkdirAll(certFolder, os.ModePerm)
-	if err != nil {
-		return err
-	}
-
-	destinationFile := filepath.Join(certFolder, "cert.pem")
-
 	cert, err := getCert()
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(destinationFile, cert, 0444)
+	f, err := os.Open("/home")
 	if err != nil {
 		return err
+	}
+	defer f.Close()
+
+	users, err := f.Readdirnames(0)
+	if err != nil {
+		return err
+	}
+
+	defaultPaths := []string{"/root", "/etc/skel"}
+	paths := append(defaultPaths, users...)
+
+	for _, path := range paths {
+		log.WithField("path", path).Debug("  Adding Artifactory CLI configuration...")
+
+		certPath := filepath.Join(path, ".jfrog/security/certs")
+		err = os.MkdirAll(certPath, os.ModePerm)
+		if err != nil {
+			return err
+		}
+
+		f := filepath.Join(certPath, "cert.pem")
+		err = os.WriteFile(f, cert, 0444)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

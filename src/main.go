@@ -57,28 +57,6 @@ func execInContainer(ctx context.Context, cli *client.Client, id string, command
 	return output, nil
 }
 
-// func Generate(input ...string) (io.Reader, error) {
-// 	files := parseStringPairs(input...)
-// 	buf := new(bytes.Buffer)
-// 	tw := tar.NewWriter(buf)
-// 	for _, file := range files {
-// 		name, content := file[0], file[1]
-// 		hdr := &tar.Header{
-// 			Name: name,
-// 			Size: int64(len(content)),
-// 		}
-// 		if err := tw.WriteHeader(hdr); err != nil {
-// 			return nil, err
-// 		}
-// 		if _, err := tw.Write([]byte(content)); err != nil {
-// 			return nil, err
-// 		}
-// 	}
-// 	if err := tw.Close(); err != nil {
-// 		return nil, err
-// 	}
-// 	return buf, nil
-
 // File holds the filename and its content
 type File struct {
 	Name    string

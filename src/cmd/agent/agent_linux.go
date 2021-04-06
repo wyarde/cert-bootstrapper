@@ -52,7 +52,7 @@ func configureNpm() error {
 
 		for _, prefix := range []string{"/usr", "/usr/local"} {
 			path := filepath.Join(prefix, "etc")
-			npmrcFile := filePath.Join(path, "npmrc")
+			npmrcFile := filepath.Join(path, "npmrc")
 
 			log.WithField("npmrcFile", npmrcFile).Debug()
 
@@ -67,45 +67,6 @@ func configureNpm() error {
 			if err != nil {
 				return err
 			}
-		}
-	}
-
-	return nil
-}
-
-func configureArtifactoryCli() error {
-	cert, err := getCert()
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Open("/home")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	users, err := f.Readdirnames(0)
-	if err != nil {
-		return err
-	}
-
-	defaultPaths := []string{"/root", "/etc/skel"}
-	paths := append(defaultPaths, users...)
-
-	for _, path := range paths {
-		log.WithField("path", path).Debug("  Adding Artifactory CLI configuration...")
-
-		certPath := filepath.Join(path, ".jfrog/security/certs")
-		err = os.MkdirAll(certPath, os.ModePerm)
-		if err != nil {
-			return err
-		}
-
-		f := filepath.Join(certPath, "cert.pem")
-		err = os.WriteFile(f, cert, 0444)
-		if err != nil {
-			return err
 		}
 	}
 

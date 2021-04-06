@@ -43,7 +43,3 @@ func configureNpm() error {
 
 	return nil
 }
-
-func configureArtifactoryCli() error {
-	return nil
-}
